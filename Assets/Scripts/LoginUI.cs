@@ -18,6 +18,7 @@ public class LoginUI : MonoBehaviour
     private TextMeshProUGUI profileButtonText;
 
     public GameObject LoginPanel;
+    public GameObject ProfilePanel;
 
     public TextMeshProUGUI statusText;
 
@@ -53,8 +54,9 @@ public class LoginUI : MonoBehaviour
         });
         profileButton.onClick.AddListener(() =>
         {
-            authManager.SignOut();
-            UpdateUI().Forget();
+            ProfilePanel.SetActive(!ProfilePanel.activeSelf);
+            //authManager.SignOut();
+            //UpdateUI().Forget();
         });
         UpdateUI().Forget();
     }
@@ -64,7 +66,8 @@ public class LoginUI : MonoBehaviour
         if (AuthManager.Instance == null || !AuthManager.Instance.IsInitialized) return;
         bool isLoggedIn = AuthManager.Instance.IsLoggedIn;
         LoginPanel.SetActive(!isLoggedIn);
-        profileButtonText.text = AuthManager.Instance.UserId;
+        profileButton.gameObject.SetActive(isLoggedIn);
+        // profileButtonText.text = AuthManager.Instance.UserId;
     }
 
     private async UniTaskVoid OnLoginButtonClicked(string e, string p)

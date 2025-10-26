@@ -15,25 +15,27 @@ public class ProfileManager : MonoBehaviour
     private UserProfile cachedProfile;
     public UserProfile CachedProfile => cachedProfile;
 
+    private UniTaskCompletionSource readyTcs = new UniTaskCompletionSource();
+    public UniTask WaitForReadyAsync() => readyTcs.Task;
+
     private void Awake()
     {
-        if (instance == null)
+        if (instance != null && instance != this)
         {
-            instance = this;
+            Destroy(this.gameObject);
+            return;
         }
-        else
-        {
-
-        }
+        instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     private async UniTaskVoid Start()
     {
-        await FirebaseInitializer.Instance.WaitForInitilazationAync();
+        await FirebaseInitializer.Instance.WaitForInitilazationAsync();
 
         databaseRef = FirebaseDatabase.DefaultInstance.RootReference;
         usersRef = databaseRef.Child("users");
-
+        readyTcs.TrySetResult();
         Debug.Log("[Profile] ProfileManager 초기화 완료");
     }
 
@@ -45,7 +47,7 @@ public class ProfileManager : MonoBehaviour
         }
 
         string userId = AuthManager.Instance.UserId;
-        string email = AuthManager.Instance.CurrentUser.Email ?? "익명";
+        string email = AuthManager.Instance.User.Email ?? "익명";
 
         try
         {
@@ -68,7 +70,7 @@ public class ProfileManager : MonoBehaviour
         }
     }
 
-    public async UniTask<(UserProfile profile, string error)> LoadProfileAsync(string nickname)
+    public async UniTask<(UserProfile profile, string error)> LoadProfileAsync()
     {
         if (!AuthManager.Instance.IsLoggedIn)
         {
@@ -79,7 +81,7 @@ public class ProfileManager : MonoBehaviour
 
         try
         {
-            Debug.Log($"[Profile] 프로필 로드 시도 {nickname}");
+            Debug.Log($"[Profile] 프로필 로드 시도");
             DataSnapshot snapshot = await usersRef.Child(userId).GetValueAsync().AsUniTask();
 
             if (!snapshot.Exists)
@@ -91,7 +93,7 @@ public class ProfileManager : MonoBehaviour
             string json = snapshot.GetRawJsonValue();
             cachedProfile = UserProfile.FromJson(json);
 
-            Debug.Log($"[Profile] 프로필 성공 {nickname}");
+            Debug.Log($"[Profile] 프로필 성공");
             return (cachedProfile, null);
         }
 
