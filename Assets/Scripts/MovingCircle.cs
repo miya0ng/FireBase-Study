@@ -1,8 +1,10 @@
+using Cysharp.Threading.Tasks;
+using System;
+using System.Threading;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SocialPlatforms.Impl;
 using UnityEngine.UI;
-using Cysharp.Threading.Tasks;
-using System.Threading;
 
 public class MovingCircle : MonoBehaviour
 {
@@ -54,15 +56,15 @@ public class MovingCircle : MonoBehaviour
 
     private void MoveCircle()
     {
-        var parent = circleRect.parent as RectTransform;
-        var parentRect = parent.rect;           
-        var circleSize = circleRect.rect.size;     
+        var parent = circleRect.parent.parent as RectTransform;
+        var parentRect = parent.rect;
+        var circleSize = circleRect.rect.size;
 
         float maxX = (parentRect.width - circleSize.x) * 0.5f;
         float maxY = (parentRect.height - circleSize.y) * 0.5f;
 
-        float x = Random.Range(-maxX, maxX);
-        float y = Random.Range(-maxY, maxY);
+        float x = UnityEngine.Random.Range(-maxX, maxX);
+        float y = UnityEngine.Random.Range(-maxY, maxY);
 
         circleRect.anchoredPosition = new Vector2(x, y);
     }
@@ -90,9 +92,10 @@ public class MovingCircle : MonoBehaviour
                 cancellationTokenSource.Cancel();
                 timerText.text = "시간 종료!";
                 finalScoreText.text = "점수 : " + currentScore.ToString();
+                
                 endUI.SetActive(true);
+                ScoreManager.Instance.SaveScoreAsync(currentScore).Forget();
             }
         }
     }
-
 }

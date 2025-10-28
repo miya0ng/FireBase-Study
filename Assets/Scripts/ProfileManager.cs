@@ -3,7 +3,6 @@ using Cysharp.Threading.Tasks;
 using Cysharp.Threading.Tasks.Linq;
 using Firebase.Database;
 using UnityEngine;
-
 public class ProfileManager : MonoBehaviour
 {
     private static ProfileManager instance;
